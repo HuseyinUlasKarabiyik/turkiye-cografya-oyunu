@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coğrafya Oyunu - Türkiye</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            height: 100vh;
+            width: 100%;
+            background: #000;
+        }
+
+        /* Bilgi Kutusu Tasarımı */
+        #bilgi {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: sans-serif;
+            border: 1px solid white;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <div id="bilgi">
+        <h2 id="puan" style="color: #ffd700; margin-top: 0;">Puan: 0</h2>
+        <h3 id="sure-kutusu" style="color: cyan;">Süre: 60</h3>
+        <h3 id="soru">Soru Yükleniyor</h3>
+        <button onclick="window.location.href = 'index.html'">Menüye Dön</button>
+        <div id="cikti">Başlamak İçin Bekleyiniz</div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script src="sehirler.js"></script>
+    <script src="sorular.js"></script>
+
+    <script>
+        var gelenZorluk = localStorage.getItem('asama');
+        var aktif_soru = null;
+        var puan = 0;
+
+        if (!gelenZorluk) {
+            alert("Lütfen önce menüden seçim yapın!");
+            window.location.href = 'index.html';
+        }
+
+        Sorular = Soru_Havuzu.filter(function (soru) {
+            return soru.asama === gelenZorluk;
+        });
+
+        var kalanSure = 60;
+        var zamanlayaci;
+
+
+        var soru = document.getElementById('soru');
+        var cikti = document.getElementById('cikti');
+        var skor = document.getElementById('puan');
+        // 1. Harita Sınır Ayarları
+        var guneyBati = L.latLng(36.0, 26.0);
+        var kuzeyDogu = L.latLng(42.0, 45.0);
+        var sinirlar = L.latLngBounds(guneyBati, kuzeyDogu);
+
+        var map = L.map('map', {
+            center: [39.0, 35.0],
+            //Yakınlaştırma Ayarları
+            zoom: 7,
+            minZoom: 7,
+            maxZoom: 10,
+            //Sınır Çerçevesi
+            maxBounds: sinirlar,
+            maxBoundsViscosity: 1.0
+        });
+
+        // 2. Altlık Harita (Esri Uydu Görüntüsü - Yazısız)
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri &mdash; Data &copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // 3. Soru Fonksiyonu
+        function soruSor() {
+            if (Sorular.length === 0) {
+                alert("Tebrikler! Tüm soruları cevapladın. Toplam Puan: " + puan);
+                oyunuBitir(); // Oyunu bitirip menüye atar
+                return;
+            }
+
+            var soru_no = Math.floor(Math.random() * Sorular.length);
+
+            aktif_soru = Sorular[soru_no];
+            Sorular.splice(soru_no, 1);
+
+            soru.innerText = aktif_soru.soru_metni;
+            cikti.innerText = "Haritada bul ve tıkla!";
+            cikti.style.color = "white";
+        }
+        // 4. GEOJSON YÜKLEME
+
+        var geoJsonKatmani = L.geoJSON(sehirler, {
+
+            // STİL AYARLARI
+            style: function (feature) {
+                return {
+                    color: '#3388ff',
+                    weight: 1,
+                    opacity: 0.5,
+                    fillColor: 'green',
+                    fillOpacity: 0.8
+                };
+            },
+
+            // ETKİLEŞİM AYARLARI
+            onEachFeature: function (feature, layer) {
+
+                // Hover
+                layer.on('mouseover', function () {
+                    this.setStyle(
+                        {
+                            weight: 3,
+                            color: 'yellow',
+                            fillColor: 'Yellow',
+                            fillOpacity: 1.0
+                        });
+                });
+
+                // Reset
+                layer.on('mouseout', function () {
+                    geoJsonKatmani.resetStyle(this);
+                });
+
+                // TIKLAMA OLAYI
+                layer.on('click', function () {
+                    var kullanici_cevap = feature.properties.name;
+
+                    if (kullanici_cevap == aktif_soru.cevap_ili) {
+                        cikti.innerText = "Tebrikler! Bildin.";
+                        cikti.style.color = "#00ff00";
+                        puan += 10;
+                        kalanSure += 5;
+                        skor.innerText = "Puan : " + puan;
+                        layer.setStyle({ fillColor: 'green', fillOpacity: 1, color: 'green' });
+
+                        setTimeout(soruSor, 1500);
+                    }
+
+                    else {
+                        puan -= 1;
+                        skor.innerText = "Puan : " + puan;
+                        cikti.innerText = "Yanlış! Doğru cevap" + aktif_soru.cevap_ili;
+                        cikti.style.color = "red";
+
+                        layer.setStyle({ fillColor: 'red', fillOpacity: 1, color: 'red' });
+                        setTimeout(function () {
+                            geoJsonKatmani.resetStyle(layer);
+                        }, 500);
+                    }
+                });
+            }
+        }).addTo(map);
+
+        function oyunuBitir() {
+            clearInterval(zamanlayici); // Sayacı durdur
+
+            // Haritayı dondur (tıklamayı kapat)
+            map.off('click');
+
+            // Sonucu göster
+            alert("Oyun Bitti! Toplam Puanın: " + puan);
+
+            // Ana menüye at
+            window.location.href = "index.html";
+        }
+
+        //SÜRE SAYACI
+        function sayaciBaslat() {
+            var sureKutusu = document.getElementById('sure-kutusu');
+            zamanlayici = setInterval(function () {
+                kalanSure--;
+                sureKutusu.innerText = "Süre: " + kalanSure;
+
+                if (kalanSure < 10) {
+                    sureKutusu.style.color = "red";
+                }
+
+                if (kalanSure <= 0) {
+                    oyunuBitir();
+                }
+            }, 1000);
+        }
+        function oyunuBitir() {
+            clearInterval(zamanlayici);
+
+            map.off('click');
+
+            alert("Oyun Bitti! Toplam Puanın: " + puan);
+
+            window.location.href = "index.html";
+        }
+        // 5 Oyunu Başlat
+        soruSor();
+        sayaciBaslat();
+    </script>
+</body>
+
+</html>

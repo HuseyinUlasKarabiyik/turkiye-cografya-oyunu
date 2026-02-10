@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Coğrafya Oyunu - Giriş</title>
+    <style>
+        body {
+            background: #222; color: white;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center; height: 100vh;
+            font-family: sans-serif;
+        }
+        button {
+            padding: 15px 30px; margin: 10px; font-size: 1.2em; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>COĞRAFYA KAŞİFİ</h1>
+    <h3>Lütfen Bir Seviye Seçin:</h3>
+
+    <button onclick="oyunaGec('kolay')">🟢 Kolay (Şehirler)</button>
+    <button onclick="oyunaGec('zor')">🔴 Zor (Fiziki Coğrafya)</button>
+
+    <script>
+        function oyunaGec(asama) {
+            localStorage.setItem('asama', asama);
+            
+            window.location.href = 'InGame.html';
+        }
+    </script>
+
+</body>
+</html>
