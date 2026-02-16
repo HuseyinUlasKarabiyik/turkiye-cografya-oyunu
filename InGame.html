@@ -54,6 +54,28 @@
         var aktif_soru = null;
         var puan = 0;
 
+        var ekranGenisligi = window.innerWidth;
+        var baslangicZoom;
+        var merkezKoordinat;
+        var minZoomLevel;
+        var maxZoomLevel;
+
+        if (ekranGenisligi < 600) {
+            // --- TELEFON AYARLARI ---
+            baslangicZoom = 5;
+            merkezKoordinat = [39.0, 35.0];
+            minZoomLevel = 5; 
+            maxZoomLevel = 8;
+        }
+        else {
+            // --- BİLGİSAYAR AYARLARI ---
+            baslangicZoom = 7;
+            merkezKoordinat = [39.0, 35.0];
+            minZoomLevel = 7;    
+            maxZoomLevel = 10;
+        }
+
+
         if (!gelenZorluk) {
             alert("Lütfen önce menüden seçim yapın!");
             window.location.href = 'index.html';
@@ -76,11 +98,11 @@
         var sinirlar = L.latLngBounds(guneyBati, kuzeyDogu);
 
         var map = L.map('map', {
-            center: [39.0, 35.0],
+            center: merkezKoordinat,
             //Yakınlaştırma Ayarları
-            zoom: 7,
-            minZoom: 7,
-            maxZoom: 10,
+            zoom: baslangicZoom,
+            minZoom: minZoomLevel,
+            maxZoom: maxZoomLevel,
             //Sınır Çerçevesi
             maxBounds: sinirlar,
             maxBoundsViscosity: 1.0
