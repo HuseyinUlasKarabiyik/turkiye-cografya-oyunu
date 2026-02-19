@@ -64,14 +64,14 @@
             // --- TELEFON AYARLARI ---
             baslangicZoom = 4;
             merkezKoordinat = [39.0, 35.0];
-            minZoomLevel = 4; 
+            minZoomLevel = 4;
             maxZoomLevel = 8;
         }
         else {
             // --- BİLGİSAYAR AYARLARI ---
             baslangicZoom = 7;
             merkezKoordinat = [39.0, 35.0];
-            minZoomLevel = 7;    
+            minZoomLevel = 7;
             maxZoomLevel = 10;
         }
 
@@ -85,7 +85,7 @@
             return soru.asama === gelenZorluk;
         });
 
-        var kalanSure = 60;
+        var kalanSure = 120;
         var zamanlayaci;
 
 
@@ -172,7 +172,7 @@
                         cikti.innerText = "Tebrikler! Bildin.";
                         cikti.style.color = "#00ff00";
                         puan += 10;
-                        kalanSure += 5;
+                        kalanSure += 10;
                         skor.innerText = "Puan : " + puan;
                         layer.setStyle({ fillColor: 'green', fillOpacity: 1, color: 'green' });
 
@@ -184,11 +184,12 @@
                         skor.innerText = "Puan : " + puan;
                         cikti.innerText = "Yanlış! Doğru cevap" + aktif_soru.cevap_ili;
                         cikti.style.color = "red";
-
+                        dogruIl(aktif_soru.cevap_ili);
                         layer.setStyle({ fillColor: 'red', fillOpacity: 1, color: 'red' });
                         setTimeout(function () {
                             geoJsonKatmani.resetStyle(layer);
-                        }, 500);
+                        }, 2000);
+                        soruSor();
                     }
                 });
             }
@@ -205,6 +206,25 @@
 
             // Ana menüye at
             window.location.href = "index.html";
+        }
+        // --- DOĞRU İLİ HARİTADA GÖSTERME FONKSİYONU ---
+        function dogruIl(arananIl) {
+            geoJsonKatmani.eachLayer(function (layer) {
+
+                if (layer.feature.properties.name === arananIl) {
+
+                    layer.setStyle({
+                        fillColor: 'yellow',
+                        color: 'white',
+                        weight: 3,
+                        fillOpacity: 0.8
+                    });
+
+                    setTimeout(function () {
+                        geoJsonKatmani.resetStyle(layer);
+                    }, 2000);
+                }
+            });
         }
 
         //SÜRE SAYACI
