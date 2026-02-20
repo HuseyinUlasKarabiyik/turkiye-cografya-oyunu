@@ -137,11 +137,11 @@
             // STİL AYARLARI
             style: function (feature) {
                 return {
-                    color: '#3388ff',
+                    color: 'black',
                     weight: 1,
-                    opacity: 0.5,
+                    opacity: 1,
                     fillColor: '#00CED1',
-                    fillOpacity: 0.8
+                    fillOpacity: 1
                 };
             },
 
@@ -153,7 +153,7 @@
                     this.setStyle(
                         {
                             weight: 3,
-                            color: 'yellow',
+                            color: 'black',
                             fillColor: 'Yellow',
                             fillOpacity: 1.0
                         });
@@ -172,7 +172,7 @@
                         cikti.innerText = "Tebrikler! Bildin.";
                         cikti.style.color = "#00ff00";
                         puan += 10;
-                        kalanSure += 10;
+                        kalanSure += 5;
                         skor.innerText = "Puan : " + puan;
                         layer.setStyle({ fillColor: 'green', fillOpacity: 1, color: 'green' });
 
@@ -214,10 +214,10 @@
                 if (layer.feature.properties.name === arananIl) {
 
                     layer.setStyle({
-                        fillColor: 'yellow',
+                        fillColor: 'green',
                         color: 'white',
                         weight: 3,
-                        fillOpacity: 0.8
+                        fillOpacity: 1
                     });
 
                     setTimeout(function () {
